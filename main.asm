@@ -6,20 +6,20 @@ WelcomeMsg BYTE "                  Welcome to TIC-TAC-TOE",0dh,0ah,0dh,0ah,0
 Rules0 BYTE "The rules of the game are as follows:",0dh,0ah,0
 Rules1 BYTE "1. PLAYERS: 2 players can play this game",0dh,0ah,0
 Rules2 BYTE "2. TURNS: Begins with player 1 and then alternates between the 2 players",0dh,0ah,0
-Rules3 BYTE "3. INPUTS: Player 1 will enter coordinates for placing X whereas Player 2 will enter coordinates for placing O along with the coordinates for position on XO grid",0dh,0ah,0
-Rules4 BYTE "4. GAME OVER: Game will end when any player successfully manages to connect three consecutive blocks either row-wise, column-wise, or diagonally",0dh,0ah,0
+Rules3 BYTE	"3. INPUTS: Player 1 will enter coordinates for placing X whereas Player 2 will enter coordinates for placing O along with the coordinates for positon on XO grid",0dh,0ah,0
+Rules4 BYTE	"4. GAME OVER: Game will end when any player successfully manages to connect three consecutive blocks either row-wise, column-wise, or diagonally",0dh,0ah,0
 TurnMsg1 BYTE "Player 1 turn: ",0dh,0ah,0
 TurnMsg2 BYTE "Player 2 turn: ",0dh,0ah,0
 WinMsg1 BYTE "Player 1 wins !",0dh,0ah,0
 WinMsg2 BYTE "Player 2 wins !",0dh,0ah,0
 TieMsg BYTE "Game is tied !",0dh,0ah,0
+PlayAgain BYTE "Enter 1 to play again (OR) any Other Number to Exit: ",0dh,0ah,0
 Space BYTE " ",0
 player1 BYTE 'X'
 player2 BYTE 'O'
 RowMsg BYTE "Enter row number (1-3)",0dh,0ah,0
 ColMsg BYTE "Enter coloumn number (1-3)",0dh,0ah,0
 ErrMsg BYTE "Incorrect coordiantes. Enter Again",0
-playAgain BYTE "Do you want to play again? Press (1) to play and (any other key) to exit",0
 Row DWORD ?
 Col DWORD ?
 Grid BYTE 9 DUP('*')
@@ -27,7 +27,6 @@ val1 BYTE ?
 val2 BYTE ?
 val3 BYTE ?
 flag_enter_again BYTE ?
-again DWORD ?
 
 .code
 
@@ -47,86 +46,70 @@ mov ecx,9
 mov ebx,0
 
 turns:
-push ecx
-push ebx
 call Input
+cmp flag_enter_again,1
+je  same_turn
 call Print
 call Row1Check
 cmp eax,1
-pop ebx
-push ebx
 je Winner
 call Row2Check
 cmp eax,1
-pop ebx
-push ebx
 je Winner
 call Row3Check
 cmp eax,1
-pop ebx
-push ebx
 je Winner
 call Col1Check
 cmp eax,1
-pop ebx
-push ebx
 je Winner
 call Col2Check
 cmp eax,1
-pop ebx
-push ebx
 je Winner
 call Col3Check
 cmp eax,1
-pop ebx
-push ebx
 je Winner
 call Dig1Check
 cmp eax,1
-pop ebx
-push ebx
 je Winner
 call Dig2Check
 cmp eax,1
-pop ebx
-push ebx
 je Winner
-pop ebx
-pop ecx
-cmp flag_enter_again,1
-je same_turn
 xor ebx,1
+jmp loop_continue
 same_turn:
+inc ecx
+loop_continue:
 loop turns
 
 mov edx,offset TieMsg
 call writestring
+
+mov edx, offset playAgain
+call writestring
+
+call readint
+cmp eax, 1
+je start
 exit
 
 Winner:
 cmp ebx,0
 jne player2_winner
+
 mov edx,offset WinMsg1
 call writestring
-call writestring
-call crlf
-call crlf
 
 mov edx, offset playAgain
 call writestring
-call crlf
 
 call readint
 cmp eax, 1
 je start
-
-jmp done
+exit
 
 player2_winner:
 mov edx,offset WinMsg2
 call writestring
-call crlf
-call crlf
 
 mov edx, offset playAgain
 call writestring
@@ -134,8 +117,6 @@ call writestring
 call readint
 cmp eax, 1
 je start
-
-done:
 exit
 
 main ENDP
@@ -161,7 +142,7 @@ call crlf
 ret
 Rules ENDP
 
-Print PROC
+Print PROC USES ecx
 call clrscr
 mov esi, offset Grid
 mov ecx, 9
@@ -186,7 +167,8 @@ call crlf
 ret
 Print ENDP
 
-Input PROC
+Input PROC USES ebx ecx
+    mov flag_enter_again,0
     cmp ebx, 0
     jne Msgplayer2
     mov edx, offset TurnMsg1
@@ -243,8 +225,7 @@ update_grid:
     ret
 
 invalid_input:
-    mov flag_enter_again,1
-    inc ecx                   ; Input Again         
+    mov flag_enter_again,1        
     mov edx, offset ErrMsg
     call writestring
     call crlf
@@ -253,7 +234,7 @@ invalid_input:
 
 Input ENDP
 
-Row1Check PROC
+Row1Check PROC 
     mov al,Grid[0]
     mov val1,al
     mov al,Grid[1]
@@ -356,7 +337,8 @@ no_winner:
     ret
 WinCheck ENDP
 
-reset_grid PROC
+reset_grid PROC USES eax
+    call clrscr
     lea edi, Grid       
     mov ecx, 9          
     mov al, '*'          
