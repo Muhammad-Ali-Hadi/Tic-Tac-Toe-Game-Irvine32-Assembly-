@@ -19,7 +19,7 @@ player2 BYTE 'O'
 RowMsg BYTE "Enter row number (1-3)",0dh,0ah,0
 ColMsg BYTE "Enter coloumn number (1-3)",0dh,0ah,0
 ErrMsg BYTE "Incorrect coordiantes. Enter Again",0
-playAgain BYTE "Do you want to play again? Press (1) to play and (any other key) to exit"
+playAgain BYTE "Do you want to play again? Press (1) to play and (any other key) to exit",0
 Row DWORD ?
 Col DWORD ?
 Grid BYTE 9 DUP('*')
@@ -114,6 +114,7 @@ call crlf
 
 mov edx, offset playAgain
 call writestring
+call crlf
 
 call readint
 cmp eax, 1
