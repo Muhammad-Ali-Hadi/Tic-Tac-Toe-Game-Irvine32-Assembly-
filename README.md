@@ -8,3 +8,4 @@ This Game is Implemented using:
 4) Memory Management
 5) Loops
 6) Flags and Status checks
+7) Indirect Recursion
